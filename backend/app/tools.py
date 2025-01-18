@@ -23,6 +23,7 @@ from langchain_community.utilities.tavily_search import TavilySearchAPIWrapper
 from langchain_core.tools import Tool
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
+from langchain_community.tools.shell.tool import ShellTool, ShellInput
 
 from app.upload import vstore
 
@@ -57,6 +58,7 @@ class AvailableTools(str, Enum):
     PUBMED = "pubmed"
     WIKIPEDIA = "wikipedia"
     DALL_E = "dall_e"
+    SHELL = "shell"
 
 
 class ToolConfig(TypedDict):
@@ -206,6 +208,14 @@ class DallE(BaseTool):
     ] = "Generates images from a text description using OpenAI's DALL-E model."
 
 
+class Shell(BaseTool):
+    type: Literal[AvailableTools.SHELL] = AvailableTools.SHELL
+    name: Literal["Bash Shell"] = "Bash Shell"
+    description: Literal[
+        "Executes bash shell commands. Use for system operations, file manipulation, etc."
+    ] = "Executes bash shell commands. Use for system operations, file manipulation, etc."
+
+
 RETRIEVAL_DESCRIPTION = """Can be used to look up information that was uploaded to this assistant.
 If the user is referencing particular files, that is often a good hint that information may be here.
 If the user asks a vague question, they are likely meaning to look up info from this retriever, and you should call it!"""
@@ -310,6 +320,11 @@ def _get_dalle_tools():
     )
 
 
+@lru_cache(maxsize=1)
+def _get_shell_tool():
+    return ShellTool(args_schema=ShellInput)
+
+
 TOOLS = {
     AvailableTools.CONNERY: _get_connery_actions,
     AvailableTools.DDG_SEARCH: _get_duck_duck_go,
@@ -322,4 +337,5 @@ TOOLS = {
     AvailableTools.WIKIPEDIA: _get_wikipedia,
     AvailableTools.TAVILY_ANSWER: _get_tavily_answer,
     AvailableTools.DALL_E: _get_dalle_tools,
+    AvailableTools.SHELL: _get_shell_tool,
 }

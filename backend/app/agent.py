@@ -38,6 +38,7 @@ from app.tools import (
     TavilyAnswer,
     Wikipedia,
     YouSearch,
+    Shell,
     get_retrieval_tool,
     get_retriever,
 )
@@ -56,6 +57,7 @@ Tool = Union[
     TavilyAnswer,
     Retrieval,
     DallE,
+    Shell,
 ]
 
 

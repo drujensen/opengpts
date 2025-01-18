@@ -17,15 +17,12 @@ RUN pip install poetry
 # Set the working directory
 WORKDIR /backend
 
-# Copy only dependencies
-COPY pyproject.toml poetry.lock* ./
+# Copy the rest of application code
+COPY . .
 
 # Install all dependencies
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
-
-# Copy the rest of application code
-COPY . .
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --start-interval=1s --retries=3 CMD [ "curl", "-f", "http://localhost:8000/health" ]
 

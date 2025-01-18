@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -21,6 +19,7 @@ services:
       postgres:
         condition: service_healthy
     volumes:
+      - ./backend/workspace:/Users/drujensen/Workspace
       - ./backend/migrations:/migrations
     env_file:
       - .env
@@ -31,13 +30,15 @@ services:
       context: backend
     ports:
       - "8100:8000" # Backend is accessible on localhost:8100
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       postgres-setup:
         condition: service_completed_successfully
     env_file:
       - .env
     volumes:
-      - ./backend:/backend
+      - /Users/drujensen/Workspace:/backend/workspace
     environment:
       POSTGRES_HOST: "postgres"
     command:
