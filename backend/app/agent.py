@@ -39,6 +39,8 @@ from app.tools import (
     Wikipedia,
     YouSearch,
     Shell,
+    ReadFile,
+    WriteFile,
     get_retrieval_tool,
     get_retriever,
 )
@@ -58,6 +60,8 @@ Tool = Union[
     Retrieval,
     DallE,
     Shell,
+    ReadFile,
+    WriteFile,
 ]
 
 
