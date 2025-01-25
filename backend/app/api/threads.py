@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Path
 from langchain.schema.messages import AnyMessage
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 import app.storage as storage
 from app.auth.handlers import AuthedUser
@@ -18,7 +18,14 @@ ThreadID = Annotated[str, Path(description="The ID of the thread.")]
 class ThreadPutRequest(BaseModel):
     """Payload for creating a thread."""
 
-    name: Annotated[str, Field(description="The name of the thread.")]
+    name: Annotated[str, Field(description="The name of the thread.")] = Field(..., max_length=255)
+
+    @validator('name')
+    def truncate_name(cls, v):
+        if len(v) > 255:
+            return v[:252] + "..."  # Truncate to 252 characters and add ellipsis
+        return v
+
     assistant_id: Annotated[str, Field(description="The ID of the assistant to use.")]
 
 
