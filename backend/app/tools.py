@@ -26,6 +26,7 @@ from typing_extensions import TypedDict
 from langchain_community.tools.shell.tool import ShellTool, ShellInput
 from langchain_community.tools.file_management.write import WriteFileTool, WriteFileInput
 from langchain_community.tools.file_management.read import ReadFileTool, ReadFileInput
+from app.custom_tools.patch import PatchFileTool, PatchFileInput
 from app.upload import vstore
 
 
@@ -62,6 +63,7 @@ class AvailableTools(str, Enum):
     SHELL = "shell"
     READFILE = "readfile"
     WRITEFILE = "writefile"
+    PATCHFILE = "patchfile"
 
 
 class ToolConfig(TypedDict):
@@ -235,6 +237,14 @@ class WriteFile(BaseTool):
     ] = "Tool that writes a file from the file system."
 
 
+class PatchFile(BaseTool):
+    type: Literal[AvailableTools.PATCHFILE] = AvailableTools.PATCHFILE
+    name: Literal["Patch File"] = "Patch File"
+    description: Literal[
+        "Tool that patches a file using the unified diff format."
+    ] = "Tool that patches a file using the unified diff format."
+
+
 RETRIEVAL_DESCRIPTION = """Can be used to look up information that was uploaded to this assistant.
 If the user is referencing particular files, that is often a good hint that information may be here.
 If the user asks a vague question, they are likely meaning to look up info from this retriever, and you should call it!"""
@@ -354,6 +364,11 @@ def _get_writefile_tool():
     return WriteFileTool(args_schema=WriteFileInput)
 
 
+@lru_cache(maxsize=1)
+def _get_patchfile_tool():
+    return PatchFileTool(args_schema=PatchFileInput)
+
+
 TOOLS = {
     AvailableTools.CONNERY: _get_connery_actions,
     AvailableTools.DDG_SEARCH: _get_duck_duck_go,
@@ -369,4 +384,5 @@ TOOLS = {
     AvailableTools.SHELL: _get_shell_tool,
     AvailableTools.READFILE: _get_readfile_tool,
     AvailableTools.WRITEFILE: _get_writefile_tool,
+    AvailableTools.PATCHFILE: _get_patchfile_tool,
 }

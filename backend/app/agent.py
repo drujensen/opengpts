@@ -41,6 +41,7 @@ from app.tools import (
     Shell,
     ReadFile,
     WriteFile,
+    PatchFile,
     get_retrieval_tool,
     get_retriever,
 )
@@ -62,6 +63,7 @@ Tool = Union[
     Shell,
     ReadFile,
     WriteFile,
+    PatchFile,
 ]
 
 
