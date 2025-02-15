@@ -11,38 +11,44 @@ from langchain_community.tools.file_management.utils import (
 )
 import re
 
-_hdr_pat = re.compile("^@@ -(\d+),?(\d+)? \+(\d+),?(\d+)? @@$")
+header_pattern = re.compile("^@@ -(\d+),?(\d+)? \+(\d+),?(\d+)? @@$")
 
 
-def apply_patch(s, patch, revert=False):
-    s = s.splitlines(True)
-    p = patch.splitlines(True)
-    t = ''
-    i = sl = 0
+def apply_patch(source, patch, revert=False):
+    source_lines = source.splitlines(True)
+    patch_lines = patch.splitlines(True)
+    target_text = ''
+    index = start_line = 0
     (midx, sign) = (1, '+') if not revert else (3, '-')
-    while i < len(p) and p[i].startswith(("---", "+++")):
-        i += 1  # skip header lines
-    while i < len(p):
-        m = _hdr_pat.match(p[i])
-        if not m:
+
+    while index < len(patch_lines) and patch_lines[index].startswith(("---", "+++")):
+        index += 1  # skip header lines
+
+    while index < len(patch_lines):
+        match = header_pattern.match(patch_lines[index])
+        if not match:
             raise Exception("Cannot process diff")
-        i += 1
-        l = int(m.group(midx))-1 + (m.group(midx+1) == '0')
-        t += ''.join(s[sl:l])
-        sl = l
-        while i < len(p) and p[i][0] != '@':
-            if i+1 < len(p) and p[i+1][0] == '\\':
-                line = p[i][:-1]
-                i += 2
+
+        index += 1
+        line_number = int(match.group(midx)) - 1 + (match.group(midx + 1) == '0')
+        target_text += ''.join(source_lines[start_line:line_number])
+        start_line = line_number
+
+        while index < len(patch_lines) and patch_lines[index][0] != '@':
+            if index + 1 < len(patch_lines) and patch_lines[index + 1][0] == '\\':
+                line = patch_lines[index][:-1]
+                index += 2
             else:
-                line = p[i]
-                i += 1
+                line = patch_lines[index]
+                index += 1
+
             if len(line) > 0:
                 if line[0] == sign or line[0] == ' ':
-                    t += line[1:]
-                sl += (line[0] != sign)
-    t += ''.join(s[sl:])
-    return t
+                    target_text += line[1:]
+                start_line += (line[0] != sign)
+
+    target_text += ''.join(source_lines[start_line:])
+    return target_text
 
 
 class PatchFileInput(BaseModel):
